@@ -8,9 +8,9 @@
 #include <WiFiManager.h>
 
 //COMMENT THIS TO TURN OFF SERIAL PRINTS
-#define DEBUG
+//#define DEBUG
 //COMMENT THIS TO TURN OFF SERVO SUPPORT
-#define SERVO
+//#define SERVO
 
 #define mqtt_server             "192.168.1.62"
 #define COMMAND_TOPIC           "house/doorlock/set"
@@ -76,7 +76,9 @@ void setup(void) {
   }
 #endif
 
+#ifdef SERVO
   doorServo.attach(DOOR_SERVO_PIN);
+#endif
 
   setupWifi();
   setupServer();
@@ -115,7 +117,6 @@ void setupWifi() {
     ESP.reset();
     delay(1000);
   } 
-
 
   /*wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
   WiFi.mode(WIFI_STA);
@@ -169,23 +170,33 @@ void openDoor() {
   // it is active low on the ESP-01)
   digitalWrite(espLed, HIGH);
   digitalWrite(DOOR_SWITCH_PIN, HIGH);
-  
+
+#ifdef SERVO
   doorServo.write(180);
+#endif
+  
   clientMqtt.publish(STATE_TOPIC, ACTION_DOOR_UNLOCK);
   doorOpenTime = millis();
   openDoorInProgress = true;
 
+#ifdef DEBUG
   Serial.println("Open Door");
+#endif
 }
 
 void closeDoor() {
   digitalWrite(espLed, LOW);
   digitalWrite(DOOR_SWITCH_PIN, LOW);
-  
+
+#ifdef SERVO
   doorServo.write(0);
+#endif
+
   clientMqtt.publish(STATE_TOPIC, ACTION_DOOR_LOCK);
   openDoorInProgress = false;
-
+  
+#ifdef DEBUG
   Serial.println("Close Door");
+#endif
 }
 
